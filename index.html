@@ -550,7 +550,21 @@ const URL_APP = location.origin + location.pathname;
   function cortar(){ subs.forEach(function(u){ try{u();}catch(e){} }); subs=[]; }
   $('bLogin').addEventListener('click',function(){
     $('gateErr').textContent='';
-    D.entrarConGoogle().catch(function(e){ $('gateErr').textContent=(e&&e.code==='auth/unauthorized-domain')?'Falta autorizar este dominio en Firebase (Authentication → Configuración → Dominios autorizados).':'No se pudo iniciar sesión. Intenta de nuevo.'; });
+    D.entrarConGoogle().catch(function(e){
+      var c=(e&&e.code)||'', m={
+        'auth/unauthorized-domain':'Falta autorizar este dominio. En Firebase: Authentication → Configuración → Dominios autorizados → Agregar dominio → '+location.hostname,
+        'auth/operation-not-allowed':'El inicio con Google no está activado. En Firebase: Authentication → Método de acceso → Google → Habilitar → Guardar.',
+        'auth/configuration-not-found':'Authentication no está activado. En Firebase: Authentication → Comenzar, y luego activa Google en Método de acceso.',
+        'auth/popup-blocked':'El navegador bloqueó la ventana de Google. Permite ventanas emergentes para este sitio (ícono en la barra de direcciones) e intenta de nuevo.',
+        'auth/popup-closed-by-user':'Se cerró la ventana de Google antes de terminar. Intenta de nuevo.',
+        'auth/cancelled-popup-request':'Se abrió otra ventana de inicio. Intenta de nuevo.',
+        'auth/invalid-api-key':'El apiKey de la configuración no es correcto. Compáralo con el de Firebase.',
+        'auth/api-key-not-valid.-please-pass-a-valid-api-key.':'El apiKey de la configuración no es correcto. Compáralo con el de Firebase.',
+        'auth/network-request-failed':'No hay conexión a internet o la red bloquea Google. Revisa la conexión.',
+        'auth/internal-error':'Error interno de Google. Recarga la página e intenta de nuevo.'
+      };
+      $('gateErr').textContent=(m[c]||'No se pudo iniciar sesión.')+(c?' (código: '+c+')':'');
+    });
   });
   $('bLogout').addEventListener('click',function(){ D.salir(); });
   $('bLogout2').addEventListener('click',function(){ D.salir(); });
